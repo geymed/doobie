@@ -15,9 +15,8 @@ import doobie.enum.FetchDirection
 import doobie.enum.ResultSetConcurrency
 import doobie.enum.ResultSetType
 
-import doobie.util.Read
+import doobie.util.{ Read, Write }
 import doobie.util.analysis._
-import doobie.util.composite._
 import doobie.util.stream.repeatEvalChunks
 
 import doobie.syntax.align._
@@ -69,14 +68,14 @@ object preparedstatement {
    * Add many sets of parameters and execute as a batch update, returning total rows updated.
    * @group Batching
    */
-  def addBatchesAndExecute[F[_]: Foldable, A: Composite](fa: F[A]): PreparedStatementIO[Int] =
+  def addBatchesAndExecute[F[_]: Foldable, A: Write](fa: F[A]): PreparedStatementIO[Int] =
     fa.toList.foldRight(executeBatch)((a, b) => set(a) *> addBatch *> b).map(_.sum)
 
   /**
    * Add many sets of parameters.
    * @group Batching
    */
-  def addBatches[F[_]: Foldable, A: Composite](fa: F[A]): PreparedStatementIO[Unit] =
+  def addBatches[F[_]: Foldable, A: Write](fa: F[A]): PreparedStatementIO[Unit] =
     fa.toList.foldRight(().pure[PreparedStatementIO])((a, b) => set(a) *> addBatch *> b)
 
   /** @group Execution */
@@ -113,7 +112,7 @@ object preparedstatement {
 
   /**
    * Compute the column mappings for this `PreparedStatement` by aligning its `JdbcMeta`
-   * with the `JdbcMeta` provided by a `Composite` instance.
+   * with the `JdbcMeta` provided by a `Write` instance.
    * @group Metadata
    */
   def getColumnMappings[A](implicit A: Read[A]): PreparedStatementIO[List[(Get[_], NullabilityKnown) Ior ColumnMeta]] =
@@ -152,10 +151,10 @@ object preparedstatement {
 
   /**
    * Compute the parameter mappings for this `PreparedStatement` by aligning its `JdbcMeta`
-   * with the `JdbcMeta` provided by a `Composite` instance.
+   * with the `JdbcMeta` provided by a `Write` instance.
    * @group Metadata
    */
-  def getParameterMappings[A](implicit A: Composite[A]): PreparedStatementIO[List[(Put[_], NullabilityKnown) Ior ParameterMeta]] =
+  def getParameterMappings[A](implicit A: Write[A]): PreparedStatementIO[List[(Put[_], NullabilityKnown) Ior ParameterMeta]] =
     getParameterJdbcMeta.map(m => A.puts align m)
 
   /** @group Properties */
@@ -198,14 +197,14 @@ object preparedstatement {
    * Set the given composite value, starting at column `n`.
    * @group Parameters
    */
-  def set[A](n: Int, a: A)(implicit A: Composite[A]): PreparedStatementIO[Unit] =
+  def set[A](n: Int, a: A)(implicit A: Write[A]): PreparedStatementIO[Unit] =
     A.set(n, a)
 
   /**
    * Set the given composite value, starting at column `1`.
    * @group Parameters
    */
-  def set[A](a: A)(implicit A: Composite[A]): PreparedStatementIO[Unit] =
+  def set[A](a: A)(implicit A: Write[A]): PreparedStatementIO[Unit] =
     A.set(1, a)
 
   /** @group Properties */
