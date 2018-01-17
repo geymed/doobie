@@ -32,9 +32,9 @@ object update {
    * F[_] type argument explicitly.
    */
   trait UpdateManyWithGeneratedKeysPartiallyApplied[A, K] {
-    def apply[F[_]](as: F[A])(implicit F: Foldable[F], K: Composite[K]): Stream[ConnectionIO, K] =
+    def apply[F[_]](as: F[A])(implicit F: Foldable[F], K: Read[K]): Stream[ConnectionIO, K] =
       withChunkSize(as, DefaultChunkSize)
-    def withChunkSize[F[_]](as: F[A], chunkSize: Int)(implicit F: Foldable[F], K: Composite[K]): Stream[ConnectionIO, K]
+    def withChunkSize[F[_]](as: F[A], chunkSize: Int)(implicit F: Foldable[F], K: Read[K]): Stream[ConnectionIO, K]
   }
 
   /**
@@ -121,7 +121,7 @@ object update {
      */
     def updateManyWithGeneratedKeys[K](columns: String*): UpdateManyWithGeneratedKeysPartiallyApplied[A, K] =
       new UpdateManyWithGeneratedKeysPartiallyApplied[A, K] {
-        def withChunkSize[F[_]](as: F[A], chunkSize: Int)(implicit F: Foldable[F], K: Composite[K]): Stream[ConnectionIO, K] =
+        def withChunkSize[F[_]](as: F[A], chunkSize: Int)(implicit F: Foldable[F], K: Read[K]): Stream[ConnectionIO, K] =
           HC.updateManyWithGeneratedKeys[List,I,K](columns.toList)(sql, ().pure[PreparedStatementIO], as.toList.map(ai), chunkSize)
       }
 
@@ -131,7 +131,7 @@ object update {
      * drivers support generated keys, and some support only a single key column.
      * @group Execution
      */
-    def withGeneratedKeys[K: Composite](columns: String*)(a: A): Stream[ConnectionIO, K] =
+    def withGeneratedKeys[K: Read](columns: String*)(a: A): Stream[ConnectionIO, K] =
       withGeneratedKeysWithChunkSize[K](columns: _*)(a, DefaultChunkSize)
 
     /**
@@ -140,7 +140,7 @@ object update {
      * that not all drivers support generated keys, and some support only a single key column.
      * @group Execution
      */
-    def withGeneratedKeysWithChunkSize[K: Composite](columns: String*)(a: A, chunkSize: Int): Stream[ConnectionIO, K] =
+    def withGeneratedKeysWithChunkSize[K: Read](columns: String*)(a: A, chunkSize: Int): Stream[ConnectionIO, K] =
       HC.updateWithGeneratedKeys[K](columns.toList)(sql, HPS.set(ai(a)), chunkSize)
 
     /**
@@ -149,7 +149,7 @@ object update {
      * Note that not all drivers support generated keys, and some support only a single key column.
      * @group Execution
      */
-    def withUniqueGeneratedKeys[K: Composite](columns: String*)(a: A): ConnectionIO[K] =
+    def withUniqueGeneratedKeys[K: Read](columns: String*)(a: A): ConnectionIO[K] =
       HC.prepareStatementS(sql, columns.toList)(HPS.set(ai(a)) *> HPS.executeUpdateWithUniqueGeneratedKeys)
 
     /**
@@ -177,9 +177,9 @@ object update {
         def toFragment = u.toFragment(a)
         def analysis = u.analysis
         def run = u.run(a)
-        def withGeneratedKeysWithChunkSize[K: Composite](columns: String*)(chunkSize: Int) =
+        def withGeneratedKeysWithChunkSize[K: Read](columns: String*)(chunkSize: Int) =
           u.withGeneratedKeysWithChunkSize[K](columns: _*)(a, chunkSize)
-        def withUniqueGeneratedKeys[K: Composite](columns: String*) =
+        def withUniqueGeneratedKeys[K: Read](columns: String*) =
           u.withUniqueGeneratedKeys(columns: _*)(a)
       }
 
@@ -253,7 +253,7 @@ object update {
      * some support only a single key column.
      * @group Execution
      */
-    def withGeneratedKeys[K: Composite](columns: String*): Stream[ConnectionIO, K] =
+    def withGeneratedKeys[K: Read](columns: String*): Stream[ConnectionIO, K] =
       withGeneratedKeysWithChunkSize(columns: _*)(DefaultChunkSize)
 
     /**
@@ -262,7 +262,7 @@ object update {
      * generated keys, and some support only a single key column.
      * @group Execution
      */
-    def withGeneratedKeysWithChunkSize[K: Composite](columns: String*)(chunkSize:Int): Stream[ConnectionIO, K]
+    def withGeneratedKeysWithChunkSize[K: Read](columns: String*)(chunkSize:Int): Stream[ConnectionIO, K]
 
     /**
      * Construct a program that performs the update, yielding a single set of generated keys of
@@ -270,7 +270,7 @@ object update {
      * generated keys, and some support only a single key column.
      * @group Execution
      */
-    def withUniqueGeneratedKeys[K: Composite](columns: String*): ConnectionIO[K]
+    def withUniqueGeneratedKeys[K: Read](columns: String*): ConnectionIO[K]
 
   }
 
