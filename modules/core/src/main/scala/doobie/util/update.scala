@@ -99,7 +99,7 @@ object update {
 
     /**
      * Construct a program to execute the update and yield a count of affected rows, given the
-     * composite argument `a`.
+     * writable argument `a`.
      * @group Execution
      */
     def run(a: A): ConnectionIO[Int] =
@@ -114,7 +114,7 @@ object update {
 
     /**
      * Construct a stream that performs a batch update as with `updateMany`, yielding generated
-     * keys of composite type `K`, identified by the specified columns. Note that not all drivers
+     * keys of readable type `K`, identified by the specified columns. Note that not all drivers
      * support generated keys, and some support only a single key column.
      * @group Execution
      */
@@ -125,8 +125,8 @@ object update {
       }
 
     /**
-     * Construct a stream that performs the update, yielding generated keys of composite type `K`,
-     * identified by the specified columns, given a composite argument `a`. Note that not all
+     * Construct a stream that performs the update, yielding generated keys of readable type `K`,
+     * identified by the specified columns, given a writable argument `a`. Note that not all
      * drivers support generated keys, and some support only a single key column.
      * @group Execution
      */
@@ -134,8 +134,8 @@ object update {
       withGeneratedKeysWithChunkSize[K](columns: _*)(a, DefaultChunkSize)
 
     /**
-     * Construct a stream that performs the update, yielding generated keys of composite type `K`,
-     * identified by the specified columns, given a composite argument `a` and `chunkSize`. Note
+     * Construct a stream that performs the update, yielding generated keys of readable type `K`,
+     * identified by the specified columns, given a writable argument `a` and `chunkSize`. Note
      * that not all drivers support generated keys, and some support only a single key column.
      * @group Execution
      */
@@ -144,7 +144,7 @@ object update {
 
     /**
      * Construct a program that performs the update, yielding a single set of generated keys of
-     * composite type `K`, identified by the specified columns, given a composite argument `a`.
+     * readable type `K`, identified by the specified columns, given a writable argument `a`.
      * Note that not all drivers support generated keys, and some support only a single key column.
      * @group Execution
      */
@@ -187,7 +187,7 @@ object update {
   object Update {
 
     /**
-     * Construct an `Update` for some composite parameter type `A` with the given SQL string, and
+     * Construct an `Update` for some writable parameter type `A` with the given SQL string, and
      * optionally a `Pos` and/or `LogHandler` for diagnostics. The normal mechanism
      * for construction is the `sql/fr/fr0` interpolators.
      * @group Constructors
@@ -247,7 +247,7 @@ object update {
     def run: ConnectionIO[Int]
 
     /**
-     * Construct a stream that performs the update, yielding generated keys of composite type `K`,
+     * Construct a stream that performs the update, yielding generated keys of readable type `K`,
      * identified by the specified columns. Note that not all drivers support generated keys, and
      * some support only a single key column.
      * @group Execution
@@ -256,7 +256,7 @@ object update {
       withGeneratedKeysWithChunkSize(columns: _*)(DefaultChunkSize)
 
     /**
-     * Construct a stream that performs the update, yielding generated keys of composite type `K`,
+     * Construct a stream that performs the update, yielding generated keys of readable type `K`,
      * identified by the specified columns, given a `chunkSize`. Note that not all drivers support
      * generated keys, and some support only a single key column.
      * @group Execution
@@ -265,7 +265,7 @@ object update {
 
     /**
      * Construct a program that performs the update, yielding a single set of generated keys of
-     * composite type `K`, identified by the specified columns. Note that not all drivers support
+     * readable type `K`, identified by the specified columns. Note that not all drivers support
      * generated keys, and some support only a single key column.
      * @group Execution
      */
